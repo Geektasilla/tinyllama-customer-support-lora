@@ -20,6 +20,10 @@ so 2 epochs on 324 examples took **56 minutes on an Intel i7 CPU**.
 order ID, a product and a total of $200** and admits a "technical error"; the **fine-tuned model invents nothing**
 and asks for the details it needs.*
 
+![Chat window: refund request](docs/chat_refund.jpg)
+
+*A request with typos — "how can i get a refund??" — answered step by step in the tone of a support agent.*
+
 ## Results
 
 Evaluated on **81 held-out requests** (3 per intent, never seen in training):
