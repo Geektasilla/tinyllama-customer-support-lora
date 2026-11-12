@@ -1,0 +1,21 @@
+# Data is downloaded by `python -m supportlora.prepare_data` (license: CDLA-Sharing-1.0)
+data/*.csv
+
+# Model artefacts (large; the adapter is published separately)
+adapter/
+adapter_smoke/
+checkpoints/
+
+# Python / tools
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
