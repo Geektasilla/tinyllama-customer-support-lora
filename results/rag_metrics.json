@@ -1,0 +1,22 @@
+{
+  "questions": 16,
+  "retrieval": {
+    "hit_at_1_pct": 88,
+    "hit_at_2_pct": 100
+  },
+  "base_rag": {
+    "fact_accuracy_pct": 69,
+    "correct": 11,
+    "answers_with_placeholders": 0
+  },
+  "v1_rag": {
+    "fact_accuracy_pct": 12,
+    "correct": 2,
+    "answers_with_placeholders": 4
+  },
+  "v2_rag": {
+    "fact_accuracy_pct": 94,
+    "correct": 15,
+    "answers_with_placeholders": 0
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "test_questions": 81,
+  "generated_samples": 8,
+  "base": {
+    "answer_loss": 1.7,
+    "perplexity": 5.47,
+    "rouge_l": 0.189,
+    "finished_answers_pct": 75,
+    "avg_answer_words": 157,
+    "uses_placeholders_pct": 25
+  },
+  "fine_tuned": {
+    "answer_loss": 0.854,
+    "perplexity": 2.35,
+    "rouge_l": 0.305,
+    "finished_answers_pct": 75,
+    "avg_answer_words": 99,
+    "uses_placeholders_pct": 38
+  }
+}

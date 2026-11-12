@@ -1,7 +1,8 @@
 """Talk to the model in the terminal.
 
-python -m supportlora.chat               # fine-tuned model (needs ./adapter)
-python -m supportlora.chat --base        # original TinyLlama, for comparison
+python -m supportlora.chat               # fine-tuned model + shop policy (RAG)
+python -m supportlora.chat --no-policy   # fine-tuned model without the policy
+python -m supportlora.chat --base        # original TinyLlama + shop policy, for comparison
 """
 
 from __future__ import annotations
@@ -10,20 +11,22 @@ import argparse
 from pathlib import Path
 
 from supportlora.evaluate import generate
-from supportlora.modeling import load_base_model, load_tokenizer
+from supportlora.modeling import default_adapter, load_base_model, load_tokenizer
+from supportlora.rag import BM25Retriever, build_context, load_policies
 
 EXAMPLES = [
-    "I want to cancel my order",
-    "how can i get a refund??",
-    "where is my package",
+    "how many days do i have to return something?",
+    "what does shipping cost?",
+    "i was charged twice!!",
     "I forgot my password",
 ]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--adapter", default="adapter")
+    parser.add_argument("--adapter", default=default_adapter(), help="default: adapter_rag if trained, else adapter")
     parser.add_argument("--base", action="store_true", help="use the original model without the adapter")
+    parser.add_argument("--no-policy", action="store_true", help="do not retrieve shop policy sections")
     parser.add_argument("--max-new-tokens", type=int, default=256)
     args = parser.parse_args()
 
@@ -36,17 +39,25 @@ def main() -> None:
 
         model = PeftModel.from_pretrained(model, args.adapter)
     model.eval()
+    retriever = None if args.no_policy else BM25Retriever(load_policies())
 
-    print("Customer support assistant" + (" (base model)" if args.base else " (fine-tuned)"))
+    name = "base model" if args.base else "fine-tuned"
+    print(f"Kiwi Market support assistant ({name}, shop policy {'off' if args.no_policy else 'on'})")
     print("Try for example: " + " | ".join(EXAMPLES))
     print("Type 'exit' to quit.\n")
     while True:
         question = input("You: ").strip()
         if question.lower() in {"exit", "quit"}:
             break
-        if question:
-            answer, _ = generate(model, tokenizer, question, args.max_new_tokens)
-            print(f"\nAssistant: {answer}\n")
+        if not question:
+            continue
+        results = retriever.search(question) if retriever else []
+        if retriever:
+            print("  (policy: " + (", ".join(c.title for c, _ in results) or "no matching section") + ")")
+        answer, _ = generate(
+            model, tokenizer, question, args.max_new_tokens, context=build_context(results) if retriever else None
+        )
+        print(f"\nAssistant: {answer}\n")
 
 
 if __name__ == "__main__":

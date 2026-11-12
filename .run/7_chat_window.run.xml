@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="7. Chat window (browser)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="7. Chat window (browser, with shop policy)" type="PythonConfigurationType" factoryName="Python">
     <module name="supportlora" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />

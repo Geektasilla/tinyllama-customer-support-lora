@@ -4,6 +4,7 @@ data/*.csv
 # Model artefacts (large; the adapter is published separately)
 adapter/
 adapter_smoke/
+adapter_rag/
 checkpoints/
 
 # Python / tools

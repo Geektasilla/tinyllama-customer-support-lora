@@ -93,9 +93,28 @@ def load(path: str | Path) -> list[Example]:
     return clean(pd.read_csv(path, encoding="utf-8"), "question", "answer", "intent")
 
 
-def to_messages(question: str, answer: str | None = None) -> list[dict[str, str]]:
+# With retrieved policy, the "use placeholders" rule of SYSTEM_PROMPT would contradict "take facts from the policy",
+# so the RAG prompt has its own wording.
+SYSTEM_PROMPT_RAG = (
+    "You are a polite and helpful customer support assistant of the online shop Kiwi Market. "
+    "Answer the customer's request clearly and briefly."
+)
+CONTEXT_INSTRUCTION = (
+    "Use the following shop policy to answer. Take times, prices, links and other facts only from this policy "
+    "and never guess them. If the policy does not answer the question, say that you will forward it to a colleague."
+)
+
+
+def system_prompt(context: str | None = None) -> str:
+    """The style-only system prompt, or the RAG prompt followed by the retrieved policy sections."""
+    if not context:
+        return SYSTEM_PROMPT
+    return f"{SYSTEM_PROMPT_RAG}\n\n{CONTEXT_INSTRUCTION}\n\n{context}"
+
+
+def to_messages(question: str, answer: str | None = None, context: str | None = None) -> list[dict[str, str]]:
     """Chat messages in the format expected by tokenizer.apply_chat_template()."""
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": question}]
+    messages = [{"role": "system", "content": system_prompt(context)}, {"role": "user", "content": question}]
     if answer is not None:
         messages.append({"role": "assistant", "content": answer})
     return messages

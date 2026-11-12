@@ -27,6 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--tag", default="", help="suffix for result files, e.g. v2 -> results/metrics_v2.json")
     return parser.parse_args()
 
 
@@ -42,9 +43,10 @@ def answer_loss(model, tokenizer, pairs: list[Example], max_length: int) -> floa
 
 
 @torch.no_grad()
-def generate(model, tokenizer, question: str, max_new_tokens: int) -> tuple[str, bool]:
+def generate(model, tokenizer, question: str, max_new_tokens: int, context: str | None = None) -> tuple[str, bool]:
     """Greedy answer. Returns the text and whether the model ended the answer by itself (EOS)."""
-    inputs = tokenizer(prompt_text(tokenizer, question), return_tensors="pt", add_special_tokens=False).to(model.device)
+    prompt = prompt_text(tokenizer, question, context)
+    inputs = tokenizer(prompt, return_tensors="pt", add_special_tokens=False).to(model.device)
     output = model.generate(
         **inputs,
         max_new_tokens=max_new_tokens,
@@ -95,14 +97,15 @@ def main() -> None:
         "base": base_metrics,
         "fine_tuned": tuned_metrics,
     }
-    Path("results/metrics.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    suffix = f"_{args.tag}" if args.tag else ""
+    Path(f"results/metrics{suffix}.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     lines = ["# Sample answers on held-out test questions", ""]
     for pair, base, tuned in zip(test, base_answers, tuned_answers, strict=False):
         lines += [f"## {pair.question}", "", f"*Intent: `{pair.intent}`*", "", "**Base TinyLlama:**", "", base, ""]
         lines += ["**Fine-tuned (LoRA):**", "", tuned, ""]
         lines += ["**Reference answer from the dataset:**", "", pair.answer, "", "---", ""]
-    Path("results/samples.md").write_text("\n".join(lines), encoding="utf-8")
+    Path(f"results/samples{suffix}.md").write_text("\n".join(lines), encoding="utf-8")
     print(json.dumps(report, indent=2))
 
 

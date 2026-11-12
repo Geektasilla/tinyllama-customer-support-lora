@@ -1,6 +1,8 @@
 """Fine-tune TinyLlama with LoRA as a customer-support assistant.
 
-python -m supportlora.train                 # full run (2 epochs)
+python -m supportlora.train                 # v1: customer-support style only (2 epochs)
+python -m supportlora.train --grounded policies/train_grounded.json --output adapter_rag
+                                            # v2: + answers grounded in retrieved shop policy (RAG-aware)
 python -m supportlora.train --max-steps 2   # quick smoke test
 """
 
@@ -15,8 +17,9 @@ import torch
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import Trainer, TrainingArguments, set_seed
 
-from supportlora.data import load
+from supportlora.data import Example, load
 from supportlora.modeling import Collator, encode, load_base_model, load_tokenizer
+from supportlora.rag import BM25Retriever, build_context, load_policies
 
 LORA = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
@@ -37,7 +40,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--grounded", help="JSON with policy questions/answers; the retrieved policy goes in the prompt"
+    )
+    parser.add_argument("--grounded-repeat", type=int, default=2, help="repeat grounded examples to balance the mix")
     return parser.parse_args()
+
+
+def grounded_examples(path: str, max_length: int, tokenizer, repeat: int) -> list[dict[str, list[int]]]:
+    """Policy questions with the context the retriever finds for them - the same way it is done at inference."""
+    retriever = BM25Retriever(load_policies())
+    items = json.loads(Path(path).read_text(encoding="utf-8"))
+    encoded = [
+        encode(
+            tokenizer, Example(i["question"], i["answer"]), max_length, build_context(retriever.search(i["question"]))
+        )
+        for i in items
+    ]
+    print(f"grounded: {len(items)} policy examples x{repeat}")
+    return encoded * repeat
 
 
 def main() -> None:
@@ -50,6 +71,9 @@ def main() -> None:
 
     tokenizer = load_tokenizer()
     train_set = [encode(tokenizer, p, args.max_length) for p in train_pairs]
+    if args.grounded:
+        train_set += grounded_examples(args.grounded, args.max_length, tokenizer, args.grounded_repeat)
+    print(f"training examples in total: {len(train_set)}")
     test_set = [encode(tokenizer, p, args.max_length) for p in test_pairs]
 
     model = get_peft_model(load_base_model(), LORA)
@@ -97,7 +121,8 @@ def main() -> None:
         "args": vars(args),
         "history": trainer.state.log_history,
     }
-    Path("results/training_log.json").write_text(json.dumps(log, indent=2), encoding="utf-8")
+    name = "training_log.json" if args.output == "adapter" else f"training_log_{Path(args.output).name}.json"
+    Path("results", name).write_text(json.dumps(log, indent=2), encoding="utf-8")
     print(f"Done in {minutes:.1f} min. Adapter saved to {args.output}/")
 
 

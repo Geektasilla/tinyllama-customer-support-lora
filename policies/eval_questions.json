@@ -1,0 +1,18 @@
+[
+  {"question": "hi, how many days do I get to send stuff back?", "section": "returns#returning-an-item", "facts": ["30 days"]},
+  {"question": "what does delivery cost in germany", "section": "shipping#shipping-costs-and-delivery-times-in-germany", "facts": ["4.90", "4,90"]},
+  {"question": "from what amount is the shipping for free?", "section": "shipping#shipping-costs-and-delivery-times-in-germany", "facts": ["50"]},
+  {"question": "returned my jacket last week, when do i see the refund??", "section": "returns#refunds", "facts": ["5 business days", "five business days"]},
+  {"question": "is it too late to cancel the order I made an hour ago?", "section": "orders#cancelling-an-order", "facts": ["2 hours", "two hours"]},
+  {"question": "I need it tomorrow, do you have express shipping?", "section": "shipping#shipping-costs-and-delivery-times-in-germany", "facts": ["9.90", "9,90", "14:00"]},
+  {"question": "can you deliver to Vienna Austria and how long does it take", "section": "shipping#shipping-to-other-eu-countries", "facts": ["4-7", "4–7", "4 to 7"]},
+  {"question": "can I pay with klarna or paypal?", "section": "payments#payment-methods", "facts": ["Klarna", "PayPal"]},
+  {"question": "my card got charged 2 times for one order", "section": "payments#charged-twice", "facts": ["5 business days", "five business days"]},
+  {"question": "the reset password link doesnt work anymore", "section": "account#resetting-a-forgotten-password", "facts": ["30 minutes", "thirty minutes"]},
+  {"question": "pls remove my account and all my data", "section": "account#deleting-an-account", "facts": ["30 days", "thirty days"]},
+  {"question": "where do I find the pdf of my bill", "section": "invoices#downloading-an-invoice", "facts": ["Download invoice", "My Account"]},
+  {"question": "what is your support email address", "section": "contact#contacting-customer-support", "facts": ["support@kiwimarket.example"]},
+  {"question": "is the live chat open on saturday?", "section": "contact#contacting-customer-support", "facts": ["Monday to Friday", "Monday-Friday", "Mon"]},
+  {"question": "I got a gift card I don't need, can I return it?", "section": "returns#items-that-cannot-be-returned", "facts": ["cannot", "can't", "not possible", "unable"]},
+  {"question": "how long until i must pay the invoice from klarna", "section": "payments#paying-by-invoice-klarna", "facts": ["14 days", "fourteen days"]}
+]
