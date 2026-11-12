@@ -11,14 +11,14 @@ and **measuring** whether it actually got better.
 The whole pipeline runs on an ordinary laptop **without a GPU**: LoRA trains only 1.1 % of the weights,
 so 2 epochs on 324 examples took **56 minutes on an Intel i7 CPU**.
 
-> Why a small model? A company can run it on its own server: no per-request API costs, and customer data never
-> leaves the company — an important point under GDPR. The same pipeline works for any FAQ / support dataset.
+> Why a small model? A company can run it on its own server: no per-request API costs, and customer data can stay
+> on the company's own infrastructure — an important point under GDPR. The same pipeline works for any FAQ / support dataset.
 
 ![Chat window: fine-tuned vs base model](docs/chat_demo.jpg)
 
 *Local chat window (`python -m supportlora.app`). Request: "I was charged twice!!" — the **base model invents an
-order ID, a product and a total of $200** and admits a "technical error"; the **fine-tuned model invents nothing**
-and asks for the details it needs.*
+order ID, a product and a total of $200** and admits a "technical error"; in this answer the **fine-tuned model names no order data**
+and asks the customer for the details.*
 
 ![Chat window: refund request](docs/chat_refund.jpg)
 
@@ -35,7 +35,7 @@ Evaluated on **81 held-out requests** (3 per intent, never seen in training):
 | ROUGE-L vs. reference answer ↑ | 0.19 | **0.30** |
 | Answers that end on their own (no cut-off) ↑ | 75 % | **100 %** |
 | Average answer length | 157 words | **79 words** |
-| Uses placeholders instead of invented data ↑ | 25 % | **38 %** |
+| Answers containing a placeholder such as `{{Order Number}}` ↑ | 25 % | **38 %** |
 
 *Loss and perplexity: all 81 test requests. Generation metrics: 8 requests from 8 different intents.
 Full answers side by side: [results/samples.md](results/samples.md), raw numbers: [results/metrics.json](results/metrics.json).*
@@ -59,8 +59,8 @@ Validation loss: **0.907** after epoch 1 → **0.862** after epoch 2 (base model
 | *"Navigate to the "Pricing" section of your account. Look for the "Early Exit Penalty" option under the "Shipping & Handling" tab…"* — **invents a UI that does not exist** | *"To provide you with accurate information, could you please provide me with your account details such as your account number or username?"* — **asks for the data it needs instead of guessing** |
 
 **Request:** *"I don't know what I have to do to look for my invoice #12588"*
-→ the fine-tuned model answers about `{{Invoice Number}}` — it adopted the dataset convention of never repeating
-or inventing concrete customer data.
+→ the fine-tuned model replaced the number with the placeholder `{{Invoice Number}}`, as the reference answers in
+the dataset do. (Measured over 8 test requests, placeholders appear in 38 % of fine-tuned answers vs. 25 % for the base model.)
 
 **Request:** *"I need help seeing your reimbursement policy"*
 → the base model writes *"here's a reimbursement policy for your online shop"* (it confuses its role and talks to the
